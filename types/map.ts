@@ -3,15 +3,12 @@ export type NodeType = {
   name: string;
   lat: number;
   lng: number;
-  type: "block" | "room" | "gate" | "facility" |"hostel"|"library"|"canteen";
+  type: "gate" | "block" | "library" | "hostel" | "junction";
 };
 
 export type EdgeType = {
   node: string;
   distance: number;
-  wheelchair?: boolean;
 };
 
-export type GraphType = {
-  [key: string]: EdgeType[];
-};
+export type GraphType = Record<string, EdgeType[]>;

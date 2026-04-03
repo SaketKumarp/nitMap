@@ -1,26 +1,50 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import mapboxgl from "mapbox-gl";
+import MapView from "@/components/frontend/MapView";
+import Sidebar from "@/components/frontend/SideBar";
+import TopBar from "@/components/frontend/TopBar";
 
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
+import { useState } from "react";
+import { dijkstra } from "@/lib/dijkistra";
+import { edges } from "@/data/edges";
+import { getDirections } from "@/lib/getdirection";
+import DirectionsCard from "@/components/frontend/DirectionCard";
 
-export default function Map() {
-  const mapRef = useRef<mapboxgl.Map | null>(null);
-  const mapContainerRef = useRef<HTMLDivElement | null>(null);
+export default function Page() {
+  const [activeTab, setActiveTab] = useState("navigate");
+  const [routeStart, setRouteStart] = useState("gate");
+  const [routeEnd, setRouteEnd] = useState("");
 
-  useEffect(() => {
-    if (!mapContainerRef.current) return;
+  // 🔥 THIS IS WHERE PATH IS CALCULATED
+  const path = routeEnd ? dijkstra(edges, routeStart, routeEnd) : [];
 
-    mapRef.current = new mapboxgl.Map({
-      container: mapContainerRef.current,
-      style: "mapbox://styles/mapbox/streets-v11",
-      center: [91.8669, 25.6012],
-      zoom: 16,
-    });
+  // 🔥 THIS IS WHERE DIRECTIONS ARE GENERATED
+  const steps = getDirections(path);
 
-    return () => mapRef.current?.remove();
-  }, []);
+  return (
+    <div className="flex h-screen text-white">
+      {/* Sidebar */}
+      <div className="glass-dark m-3 rounded-2xl">
+        <Sidebar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          routeStart={routeStart}
+          setRouteStart={setRouteStart}
+          routeEnd={routeEnd}
+          setRouteEnd={setRouteEnd}
+        />
+      </div>
 
-  return <div ref={mapContainerRef} className="w-full h-125 rounded-xl" />;
+      {/* Map Area */}
+      <div className="flex-1 p-3">
+        <div className="w-full h-full rounded-2xl overflow-hidden relative glass">
+          <TopBar />
+          <MapView routeStart={routeStart} routeEnd={routeEnd} />
+
+          {/* 🔥 DIRECTIONS CARD HERE */}
+          <DirectionsCard steps={steps} />
+        </div>
+      </div>
+    </div>
+  );
 }

@@ -1,30 +1,53 @@
-import { GraphType } from "@/types/map";
+export const edges = {
+  // ENTRY
+  gate: [{ node: "j5", distance: 40 }],
 
-export const edges: GraphType = {
-  gate: [
-    { node: "admin", distance: 120 },
-    { node: "blockA", distance: 100 },
+  // LOWER AREA
+  blockA: [{ node: "j5", distance: 50 }],
+  j5: [
+    { node: "gate", distance: 40 },
+    { node: "blockA", distance: 50 },
+    { node: "j4", distance: 30 },
   ],
-  admin: [
-    { node: "gate", distance: 120 },
-    { node: "library", distance: 60 },
-    { node: "blockC", distance: 150 },
+
+  // CENTER
+  admin: [{ node: "j4", distance: 20 }],
+  library: [{ node: "j4", distance: 25 }],
+
+  j4: [
+    { node: "j5", distance: 30 },
+    { node: "admin", distance: 20 },
+    { node: "library", distance: 25 },
+    { node: "j3", distance: 35 },
   ],
-  library: [{ node: "admin", distance: 60 }],
-  blockA: [
-    { node: "gate", distance: 100 },
-    { node: "blockC", distance: 140 },
+
+  // UPPER MID
+  blockC: [{ node: "j3", distance: 30 }],
+
+  j3: [
+    { node: "j4", distance: 35 },
+    { node: "blockC", distance: 30 },
+    { node: "j2", distance: 30 },
   ],
-  blockC: [
-    { node: "blockA", distance: 140 },
-    { node: "admin", distance: 150 },
-    { node: "blockD", distance: 60 },
-    { node: "girlsHostel", distance: 250 },
+
+  // TOP AREA
+  blockD: [{ node: "j2", distance: 25 }],
+
+  j2: [
+    { node: "j3", distance: 30 },
+    { node: "blockD", distance: 25 },
+    { node: "j1", distance: 25 },
   ],
-  blockD: [{ node: "blockC", distance: 60 }],
-  boysHostel: [{ node: "girlsHostel", distance: 300 }],
-  girlsHostel: [
-    { node: "blockC", distance: 250 },
-    { node: "boysHostel", distance: 300 },
+
+  // EXTRA CONNECTIVITY
+  j1: [{ node: "j2", distance: 25 }],
+
+  // HOSTELS SIDE
+  girlsHostel: [{ node: "j6", distance: 60 }],
+  boysHostel: [{ node: "j6", distance: 40 }],
+
+  j6: [
+    { node: "girlsHostel", distance: 60 },
+    { node: "boysHostel", distance: 40 },
   ],
 };

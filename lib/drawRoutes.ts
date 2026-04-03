@@ -40,7 +40,7 @@ export function drawRoute(
     type: "line",
     source: "route",
     paint: {
-      "line-color": "#3b82f6",
+      "line-color": "#e84118",
       "line-width": 5,
     },
   });
