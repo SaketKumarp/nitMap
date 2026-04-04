@@ -2,7 +2,7 @@ export function drawRoute(
   map: any,
   path: string[],
   nodes: any,
-  wheelchair: boolean,
+  wheelchair?: boolean,
 ) {
   const coordinates = path.map((id) => [nodes[id].lng, nodes[id].lat]);
 

@@ -38,7 +38,8 @@ export default function MapView({ routeStart, routeEnd }: any) {
       style: "mapbox://styles/mapbox/satellite-streets-v12",
       center: [91.7425, 25.2569],
       zoom: 17.5,
-      pitch: 45,
+      pitch: 55, // 🔥 more 3D feel
+      bearing: -10,
     });
 
     mapRef.current = map;
@@ -46,30 +47,52 @@ export default function MapView({ routeStart, routeEnd }: any) {
     map.on("load", () => {
       map.resize();
 
-      /* 📍 STATIC MARKERS (UPDATED WITH IMAGE POPUP) */
+      /* 📍 STATIC MARKERS WITH PREMIUM POPUP */
       Object.values(nodes).forEach((node) => {
         const el = document.createElement("div");
 
         const root = createRoot(el);
         root.render(<MapMarker active={false} type={node.type} />);
 
-        // 🔥 Create popup content
+        /* 🔥 GLASS POPUP */
         const popupContent = document.createElement("div");
-        popupContent.className = "text-white";
+        popupContent.className = "popup-3d";
 
         popupContent.innerHTML = `
-          <div style="width:200px">
+          <div class="glass-card">
             ${
               node.image
-                ? `<img src="${node.image}" style="width:100%; height:120px; object-fit:cover; border-radius:10px; margin-bottom:6px;" />`
+                ? `<div class="img-wrap">
+                     <img src="${node.image}" />
+                   </div>`
                 : ""
             }
-            <div style="font-weight:600; font-size:14px;">${node.name}</div>
+            <div class="title">${node.name}</div>
           </div>
         `;
 
+        /* 🎯 TILT EFFECT */
+        popupContent.addEventListener("mousemove", (e: any) => {
+          const card = popupContent.querySelector(".glass-card") as HTMLElement;
+          const rect = card.getBoundingClientRect();
+
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+
+          const rotateX = (y / rect.height - 0.5) * 10;
+          const rotateY = (x / rect.width - 0.5) * -10;
+
+          card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.03)`;
+        });
+
+        popupContent.addEventListener("mouseleave", () => {
+          const card = popupContent.querySelector(".glass-card") as HTMLElement;
+          card.style.transform = "rotateX(0deg) rotateY(0deg) scale(1)";
+        });
+
         const popup = new mapboxgl.Popup({
           offset: 25,
+          closeButton: false,
         }).setDOMContent(popupContent);
 
         const marker = new mapboxgl.Marker({
@@ -153,7 +176,7 @@ export default function MapView({ routeStart, routeEnd }: any) {
     return () => navigator.geolocation.clearWatch(watchId);
   }, [user]);
 
-  /* 🧭 ROUTING LOGIC (UNCHANGED) */
+  /* 🧭 ROUTING */
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !routeEnd) return;
@@ -169,8 +192,6 @@ export default function MapView({ routeStart, routeEnd }: any) {
     }
 
     if (!startNode) return;
-
-    console.log("Start:", startNode, "End:", routeEnd);
 
     const path = dijkstra(edges, startNode, routeEnd);
     drawRoute(map, path, nodes);
@@ -192,18 +213,60 @@ export default function MapView({ routeStart, routeEnd }: any) {
     <div className="w-full h-full relative">
       <div ref={mapContainerRef} className="w-full h-full" />
 
-      {/* 🔷 TopBar */}
       <div className="absolute top-4 left-4 right-4 z-10">
         <TopBar />
       </div>
 
-      {/* 🔥 Heatmap Toggle */}
       <button
         onClick={() => setShowHeatmap((prev) => !prev)}
         className="absolute top-20 right-4 z-10 bg-black/70 px-4 py-2 rounded-xl text-white"
       >
         {showHeatmap ? "Hide Crowd" : "Show Crowd"}
       </button>
+
+      {/* 🔥 STYLES */}
+      <style jsx global>{`
+        .popup-3d {
+          perspective: 1000px;
+        }
+
+        .glass-card {
+          width: 200px;
+          border-radius: 16px;
+          overflow: hidden;
+          backdrop-filter: blur(14px);
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+          transform-style: preserve-3d;
+          transition: all 0.2s ease;
+          animation: popIn 0.3s ease;
+        }
+
+        .img-wrap img {
+          width: 100%;
+          height: 120px;
+          object-fit: cover;
+        }
+
+        .title {
+          padding: 10px;
+          font-size: 14px;
+          font-weight: 600;
+          color: white;
+        }
+
+        @keyframes popIn {
+          from {
+            opacity: 0;
+            transform: scale(0.8) translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 }
