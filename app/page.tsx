@@ -9,18 +9,32 @@ import { dijkstra } from "@/lib/dijkistra";
 import { edges, wheelchairEdges } from "@/data/edges";
 import { getDirections } from "@/lib/getdirection";
 import MapView from "@/components/frontend/MapView";
+import { TabType } from "@/names/name";
+
+/* ✅ TYPE (keep consistent across project) */
+type NodeType = {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  type?: string;
+  image?: string;
+  floors?: { label: string; value: string }[];
+};
 
 export default function Page() {
-  const [activeTab, setActiveTab] = useState("navigate");
-  const [routeStart, setRouteStart] = useState("gate");
-  const [routeEnd, setRouteEnd] = useState("");
-  const [wheelchair, setWheelchair] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabType>("navigate");
+  const [routeStart, setRouteStart] = useState<string>("gate");
+  const [routeEnd, setRouteEnd] = useState<string>("");
+  const [wheelchair, setWheelchair] = useState<boolean>(false);
+
+  /* ✅ FIXED HERE */
+  const [selectedNode, setSelectedNode] = useState<NodeType | null>(null);
 
   const graph = wheelchair ? wheelchairEdges : edges;
 
   const path = routeEnd ? dijkstra(graph, routeStart, routeEnd) : [];
   const steps = getDirections(path);
-  const [selectedNode, setSelectedNode] = useState(null);
 
   return (
     <div className="min-h-screen bg-[#0b1220] text-white p-6 space-y-6">
