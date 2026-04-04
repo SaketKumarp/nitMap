@@ -6,6 +6,10 @@ import RoomsPanel from "./Room";
 import ScheduleCard from "./ScheduleCard";
 import { FacultyCard } from "./FacultyCard";
 import Image from "next/image";
+import FloorCard from "./FloorCard";
+
+// ✅ IMPORT YOUR HOOK
+import { useSchedules } from "@/hooks/fetchSchedule";
 
 export default function Sidebar({
   activeTab,
@@ -16,47 +20,41 @@ export default function Sidebar({
   setRouteEnd,
   wheelchair,
   setWheelchair,
+  selectedNode,
+  setSelectedNode,
 }: any) {
-  // 🔥 Dummy Data (unchanged)
-  const schedule = [
-    {
-      time: "09:00 AM",
-      title: "Operating Systems",
-      location: "CS Lecture Hall",
-      block: "CS Block",
-    },
-    {
-      time: "11:30 AM",
-      title: "Data Structures",
-      location: "EC Seminar Room",
-      block: "EC Block",
-      isActive: true,
-      reminder: "In 5 mins",
-    },
-    {
-      time: "02:00 PM",
-      title: "Hackathon Meeting",
-      location: "Discussion Room",
-      block: "Library",
-    },
-  ];
+  // ✅ FETCH REAL DATA
+  const { schedules, isLoading } = useSchedules();
 
+  // 🔥 Faculty (unchanged)
   const facultyList = [
     {
-      name: "Dr. A. Sharma",
-      department: "Computer Science",
-      location: "Cabin 4",
+      name: "Dr DB Tariang",
+      department: "MCA",
+      location: "Room 201",
       status: "AVAILABLE",
     },
     {
-      name: "Prof. V. Verma",
-      department: "Electronics",
-      location: "Room 201",
+      name: "Dr Nurul Amin Chaudhary",
+      department: "Machine Learning",
+      location: "Room 202",
       status: "BUSY",
     },
     {
-      name: "Dr. S. Gupta",
+      name: "N. Herojit singh",
       department: "Mathematics",
+      location: "On Leave",
+      status: "ON_LEAVE",
+    },
+    {
+      name: "DR. Ningthojam Johny Singh",
+      department: "MCA",
+      location: "Room 201",
+      status: "AVAILABLE",
+    },
+    {
+      name: " Dr. AP Singh",
+      department: "CSE",
       location: "On Leave",
       status: "ON_LEAVE",
     },
@@ -111,18 +109,27 @@ export default function Sidebar({
         />
       </div>
 
+      {/* Floor Card */}
+      {selectedNode && (
+        <div className="bg-white/10 p-3 rounded-2xl border border-white/20">
+          <FloorCard
+            node={selectedNode}
+            onClose={() => setSelectedNode(null)}
+          />
+        </div>
+      )}
+
       {/* Content */}
       <div className="flex-1 overflow-y-auto no-scrollbar space-y-4">
         {/* Route */}
         {activeTab === "navigate" && (
           <div className="bg-white/10 p-4 rounded-2xl space-y-4 border border-white/20">
-            {/* ✅ UPDATED START */}
             <SelectBox
               label="Start"
               value={routeStart}
               onChange={(e: any) => setRouteStart(e.target.value)}
               options={[
-                { value: "myLocation", label: "📍 My Location" }, // 🔥 ADDED
+                { value: "myLocation", label: "📍 My Location" },
                 { value: "gate", label: "Gate" },
                 { value: "admin", label: "Admin" },
                 { value: "library", label: "Library" },
@@ -133,7 +140,6 @@ export default function Sidebar({
               ]}
             />
 
-            {/* Destination */}
             <SelectBox
               label="Destination"
               value={routeEnd}
@@ -149,7 +155,6 @@ export default function Sidebar({
               ]}
             />
 
-            {/* Checkbox */}
             <label className="flex items-center gap-2 text-sm text-gray-300">
               <input
                 type="checkbox"
@@ -164,9 +169,22 @@ export default function Sidebar({
         {/* Rooms */}
         {activeTab === "rooms" && <RoomsPanel />}
 
-        {/* Schedule */}
-        {activeTab === "schedule" &&
-          schedule.map((item, i) => <ScheduleCard key={i} item={item} />)}
+        {/* ✅ Schedule (REAL DATA) */}
+        {activeTab === "schedule" && (
+          <>
+            {isLoading && (
+              <p className="text-gray-400 text-sm">Loading schedules...</p>
+            )}
+
+            {!isLoading && schedules?.length === 0 && (
+              <p className="text-gray-400 text-sm">No schedules found.</p>
+            )}
+
+            {schedules?.map((item: any) => (
+              <ScheduleCard key={item._id} item={item} />
+            ))}
+          </>
+        )}
 
         {/* Faculty */}
         {activeTab === "faculty" &&

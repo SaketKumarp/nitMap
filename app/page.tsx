@@ -20,6 +20,7 @@ export default function Page() {
 
   const path = routeEnd ? dijkstra(graph, routeStart, routeEnd) : [];
   const steps = getDirections(path);
+  const [selectedNode, setSelectedNode] = useState(null);
 
   return (
     <div className="min-h-screen bg-[#0b1220] text-white p-6 space-y-6">
@@ -39,6 +40,8 @@ export default function Page() {
             setRouteEnd={setRouteEnd}
             wheelchair={wheelchair}
             setWheelchair={setWheelchair}
+            selectedNode={selectedNode}
+            setSelectedNode={setSelectedNode}
           />
         </div>
 
@@ -47,7 +50,8 @@ export default function Page() {
           <MapView
             routeStart={routeStart}
             routeEnd={routeEnd}
-            wheelchair={wheelchair}
+            selectedNode={selectedNode}
+            setSelectedNode={setSelectedNode}
           />
 
           {/* Directions overlay */}

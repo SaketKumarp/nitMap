@@ -61,7 +61,7 @@ export const nodes: Record<string, NodeType> = {
     lat: 25.253616954851577,
     lng: 91.74357645724491,
     type: "hostel",
-    image: "/hostel.jpg",
+    image: "/boyshostel.png",
   },
 
   j1: {

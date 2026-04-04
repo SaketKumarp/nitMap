@@ -2,26 +2,28 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
-  users: defineTable({
-    name: v.string(),
-    email: v.string(),
-  }),
+  schedules: defineTable({
+    userId: v.string(), // Clerk user ID
 
-  listings: defineTable({
+    time: v.string(),
     title: v.string(),
-    description: v.string(),
-    price: v.number(),
-    imageUrls: v.array(v.string()),// this url will come from cloudinary
-    category: v.string(),
-    sellerId: v.string(),
-    status: v.string(),
-    createdAt: v.number(),
-  }),
+    location: v.string(),
+    block: v.string(),
 
-  messages: defineTable({
-    conversationId: v.string(),
-    senderId: v.string(),
-    text: v.string(),
+    isActive: v.optional(v.boolean()),
+    reminder: v.optional(v.string()),
+
     createdAt: v.number(),
-  }),
+  }).index("by_user", ["userId"]),
+
+  rooms: defineTable({
+    userId: v.string(),
+
+    name: v.string(),
+    block: v.string(),
+    status: v.union(v.literal("FREE"), v.literal("OCCUPIED")),
+    note: v.string(),
+
+    createdAt: v.number(),
+  }).index("by_user", ["userId"]),
 });

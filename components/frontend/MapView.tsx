@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
-import { createRoot } from "react-dom/client";
 import { useUser } from "@clerk/nextjs";
 
 import { nodes } from "@/data/nodes";
@@ -11,17 +10,37 @@ import { dijkstra } from "@/lib/dijkistra";
 import { drawRoute } from "@/lib/drawRoutes";
 import { findNearestNode } from "@/lib/nearestNodes";
 
-import MapMarker from "./Mapmarker";
 import { heatmapData } from "@/data/heatmap";
 import TopBar from "./TopBar";
 import { createUserMarker } from "../user/UserMarker";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 
-export default function MapView({ routeStart, routeEnd }: any) {
+/* ✅ TYPES */
+type NodeType = {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  type?: string;
+  image?: string;
+  floors?: { label: string; value: string }[];
+};
+
+type Props = {
+  routeStart: string;
+  routeEnd: string;
+  selectedNode: NodeType | null;
+  setSelectedNode: (node: NodeType | null) => void;
+};
+
+export default function MapView({
+  routeStart,
+  routeEnd,
+  setSelectedNode,
+}: Props) {
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
-  const markersRef = useRef<any[]>([]);
   const userMarkerRef = useRef<mapboxgl.Marker | null>(null);
 
   const [showHeatmap, setShowHeatmap] = useState(true);
@@ -38,7 +57,7 @@ export default function MapView({ routeStart, routeEnd }: any) {
       style: "mapbox://styles/mapbox/satellite-streets-v12",
       center: [91.7425, 25.2569],
       zoom: 17.5,
-      pitch: 55, // 🔥 more 3D feel
+      pitch: 55,
       bearing: -10,
     });
 
@@ -47,63 +66,34 @@ export default function MapView({ routeStart, routeEnd }: any) {
     map.on("load", () => {
       map.resize();
 
-      /* 📍 STATIC MARKERS WITH PREMIUM POPUP */
-      Object.values(nodes).forEach((node) => {
+      /* 📍 MARKERS */
+      Object.values(nodes).forEach((node: any) => {
+        if (node.type === "junction") return;
+
         const el = document.createElement("div");
 
-        const root = createRoot(el);
-        root.render(<MapMarker active={false} type={node.type} />);
-
-        /* 🔥 GLASS POPUP */
-        const popupContent = document.createElement("div");
-        popupContent.className = "popup-3d";
-
-        popupContent.innerHTML = `
-          <div class="glass-card">
+        el.innerHTML = `
+          <div class="flex flex-col items-center bg-black/60 backdrop-blur-md rounded-xl p-1 border border-white/20 shadow-lg hover:scale-105 transition">
             ${
               node.image
-                ? `<div class="img-wrap">
-                     <img src="${node.image}" />
-                   </div>`
+                ? `<img src="${node.image}" class="w-10 h-10 object-cover rounded-md" />`
                 : ""
             }
-            <div class="title">${node.name}</div>
+            <div class="text-[10px] text-white mt-1 text-center">${node.name}</div>
           </div>
         `;
-
-        /* 🎯 TILT EFFECT */
-        popupContent.addEventListener("mousemove", (e: any) => {
-          const card = popupContent.querySelector(".glass-card") as HTMLElement;
-          const rect = card.getBoundingClientRect();
-
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-
-          const rotateX = (y / rect.height - 0.5) * 10;
-          const rotateY = (x / rect.width - 0.5) * -10;
-
-          card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.03)`;
-        });
-
-        popupContent.addEventListener("mouseleave", () => {
-          const card = popupContent.querySelector(".glass-card") as HTMLElement;
-          card.style.transform = "rotateX(0deg) rotateY(0deg) scale(1)";
-        });
-
-        const popup = new mapboxgl.Popup({
-          offset: 25,
-          closeButton: false,
-        }).setDOMContent(popupContent);
 
         const marker = new mapboxgl.Marker({
           element: el,
           anchor: "bottom",
         })
           .setLngLat([node.lng, node.lat])
-          .setPopup(popup)
           .addTo(map);
 
-        markersRef.current.push(marker);
+        /* ✅ CLICK → SEND TO SIDEBAR */
+        el.addEventListener("click", () => {
+          setSelectedNode(node);
+        });
       });
 
       /* 🔥 HEATMAP */
@@ -122,7 +112,7 @@ export default function MapView({ routeStart, routeEnd }: any) {
         },
       });
     });
-  }, []);
+  }, [setSelectedNode]);
 
   /* 🔥 HEATMAP TOGGLE */
   useEffect(() => {
@@ -136,7 +126,7 @@ export default function MapView({ routeStart, routeEnd }: any) {
     }
   }, [showHeatmap]);
 
-  /* 📍 REAL-TIME LOCATION */
+  /* 📍 LOCATION */
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !user) return;
@@ -213,60 +203,18 @@ export default function MapView({ routeStart, routeEnd }: any) {
     <div className="w-full h-full relative">
       <div ref={mapContainerRef} className="w-full h-full" />
 
+      {/* Top Bar */}
       <div className="absolute top-4 left-4 right-4 z-10">
         <TopBar />
       </div>
 
+      {/* Heatmap Toggle */}
       <button
         onClick={() => setShowHeatmap((prev) => !prev)}
-        className="absolute top-20 right-4 z-10 bg-black/70 px-4 py-2 rounded-xl text-white"
+        className="absolute top-20 right-4 z-10 bg-black/70 px-4 py-2 rounded-xl text-white backdrop-blur-md"
       >
         {showHeatmap ? "Hide Crowd" : "Show Crowd"}
       </button>
-
-      {/* 🔥 STYLES */}
-      <style jsx global>{`
-        .popup-3d {
-          perspective: 1000px;
-        }
-
-        .glass-card {
-          width: 200px;
-          border-radius: 16px;
-          overflow: hidden;
-          backdrop-filter: blur(14px);
-          background: rgba(255, 255, 255, 0.08);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-          transform-style: preserve-3d;
-          transition: all 0.2s ease;
-          animation: popIn 0.3s ease;
-        }
-
-        .img-wrap img {
-          width: 100%;
-          height: 120px;
-          object-fit: cover;
-        }
-
-        .title {
-          padding: 10px;
-          font-size: 14px;
-          font-weight: 600;
-          color: white;
-        }
-
-        @keyframes popIn {
-          from {
-            opacity: 0;
-            transform: scale(0.8) translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-          }
-        }
-      `}</style>
     </div>
   );
 }
