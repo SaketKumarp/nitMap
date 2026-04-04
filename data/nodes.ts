@@ -106,4 +106,34 @@ export const nodes: Record<string, NodeType> = {
     lng: 91.7451,
     type: "junction",
   },
+  // hostel to block a 
+
+  g2: {
+    id: "g2",
+    name: "Junction",
+    lat: 25.253699256557255,
+    lng: 91.74348465107815,
+    type: "junction",
+  },
+  g3: {
+    id: "g3",
+    name: "Junction",
+    lat: 25.254140402134208,
+    lng: 91.74316840908253,
+    type: "junction",
+  },
+  g4: {
+    id: "g4",
+    name: "Junction",
+    lat: 25.255061470151823,
+    lng: 91.74260560553101,
+    type: "junction",
+  },
+  g5: {
+    id: "g5",
+    name: "Junction",
+    lat: 25.255415693649685,
+    lng: 91.74254650619726,
+    type: "junction",
+  },
 };

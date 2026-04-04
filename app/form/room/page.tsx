@@ -72,8 +72,7 @@ export default function RoomFormPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/40 to-black/60" />
         <div className="absolute inset-0 backdrop-blur-[2px]" />
       </div>
-
-      {/* 🔙 Back Button */}
+ 
       <button
         onClick={() => router.push("/")}
         className="
@@ -88,8 +87,7 @@ export default function RoomFormPage() {
         <ArrowLeft size={16} />
         Back
       </button>
-
-      {/* 🧊 Form */}
+ 
       <div className="w-full max-w-xl">
         <Card className="p-6 rounded-3xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl">
           <h2 className="text-white text-lg font-semibold flex items-center gap-2 mb-4">
@@ -169,7 +167,7 @@ export default function RoomFormPage() {
   );
 }
 
-/* 🔹 Field */
+ 
 function FormField({ label, value, onChange, icon, placeholder }: any) {
   return (
     <div>
