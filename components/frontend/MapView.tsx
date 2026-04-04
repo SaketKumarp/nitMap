@@ -46,19 +46,38 @@ export default function MapView({ routeStart, routeEnd }: any) {
     map.on("load", () => {
       map.resize();
 
-      /* 📍 STATIC MARKERS (unchanged) */
+      /* 📍 STATIC MARKERS (UPDATED WITH IMAGE POPUP) */
       Object.values(nodes).forEach((node) => {
         const el = document.createElement("div");
 
         const root = createRoot(el);
         root.render(<MapMarker active={false} type={node.type} />);
 
+        // 🔥 Create popup content
+        const popupContent = document.createElement("div");
+        popupContent.className = "text-white";
+
+        popupContent.innerHTML = `
+          <div style="width:200px">
+            ${
+              node.image
+                ? `<img src="${node.image}" style="width:100%; height:120px; object-fit:cover; border-radius:10px; margin-bottom:6px;" />`
+                : ""
+            }
+            <div style="font-weight:600; font-size:14px;">${node.name}</div>
+          </div>
+        `;
+
+        const popup = new mapboxgl.Popup({
+          offset: 25,
+        }).setDOMContent(popupContent);
+
         const marker = new mapboxgl.Marker({
           element: el,
           anchor: "bottom",
         })
           .setLngLat([node.lng, node.lat])
-          .setPopup(new mapboxgl.Popup().setText(node.name))
+          .setPopup(popup)
           .addTo(map);
 
         markersRef.current.push(marker);
@@ -134,26 +153,30 @@ export default function MapView({ routeStart, routeEnd }: any) {
     return () => navigator.geolocation.clearWatch(watchId);
   }, [user]);
 
-  /* 🧭 ROUTING LOGIC (DUAL MODE) */
+  /* 🧭 ROUTING LOGIC (UNCHANGED) */
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !routeEnd) return;
 
     let startNode = routeStart;
 
-    // 🔥 If no manual start → use user location
+    if (routeStart === "myLocation" && userLocation) {
+      startNode = findNearestNode(userLocation.lat, userLocation.lng, nodes);
+    }
+
     if (!routeStart && userLocation) {
       startNode = findNearestNode(userLocation.lat, userLocation.lng, nodes);
     }
 
     if (!startNode) return;
 
+    console.log("Start:", startNode, "End:", routeEnd);
+
     const path = dijkstra(edges, startNode, routeEnd);
     drawRoute(map, path, nodes);
 
     const bounds = new mapboxgl.LngLatBounds();
 
-    // include user position if exists
     if (userLocation) {
       bounds.extend([userLocation.lng, userLocation.lat]);
     }
@@ -169,10 +192,12 @@ export default function MapView({ routeStart, routeEnd }: any) {
     <div className="w-full h-full relative">
       <div ref={mapContainerRef} className="w-full h-full" />
 
+      {/* 🔷 TopBar */}
       <div className="absolute top-4 left-4 right-4 z-10">
         <TopBar />
       </div>
 
+      {/* 🔥 Heatmap Toggle */}
       <button
         onClick={() => setShowHeatmap((prev) => !prev)}
         className="absolute top-20 right-4 z-10 bg-black/70 px-4 py-2 rounded-xl text-white"

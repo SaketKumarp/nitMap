@@ -4,7 +4,7 @@ export type NodeType = {
   lat: number;
   lng: number;
   type: "gate" | "block" | "library" | "hostel" | "junction";
-  // images:"string"
+  image?: string; // ✅ single image (optional)
 };
 
 export type EdgeType = {
