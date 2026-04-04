@@ -8,8 +8,12 @@ import { FacultyCard } from "./FacultyCard";
 import Image from "next/image";
 import FloorCard from "./FloorCard";
 
-// ✅ IMPORT YOUR HOOK
+// ✅ HOOKS
 import { useSchedules } from "@/hooks/fetchSchedule";
+import { useRooms } from "@/hooks/useRoom";
+
+// ✅ NODES IMPORT
+import { nodes } from "@/data/nodes";
 
 export default function Sidebar({
   activeTab,
@@ -23,8 +27,17 @@ export default function Sidebar({
   selectedNode,
   setSelectedNode,
 }: any) {
-  // ✅ FETCH REAL DATA
+  // ✅ FETCH DATA
   const { schedules, isLoading } = useSchedules();
+  const { rooms, isLoading: roomsLoading } = useRooms();
+
+  // ✅ DYNAMIC LOCATIONS (NO JUNCTIONS)
+  const locationOptions = Object.values(nodes)
+    .filter((node) => node.type !== "junction")
+    .map((node) => ({
+      value: node.id,
+      label: node.name,
+    }));
 
   // 🔥 Faculty (unchanged)
   const facultyList = [
@@ -46,23 +59,11 @@ export default function Sidebar({
       location: "On Leave",
       status: "ON_LEAVE",
     },
-    {
-      name: "DR. Ningthojam Johny Singh",
-      department: "MCA",
-      location: "Room 201",
-      status: "AVAILABLE",
-    },
-    {
-      name: " Dr. AP Singh",
-      department: "CSE",
-      location: "On Leave",
-      status: "ON_LEAVE",
-    },
   ];
 
   return (
     <div className="w-80 h-full p-6 flex flex-col gap-6 border-r border-white/10 bg-black/40 backdrop-blur-xl">
-      {/* Logo */}
+      {/* 🔷 Logo */}
       <div className="flex items-center gap-3">
         <div className="relative w-12 h-12 rounded-2xl overflow-hidden border border-white/10 shadow-md">
           <Image
@@ -78,7 +79,7 @@ export default function Sidebar({
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* 🔷 Tabs */}
       <div className="flex justify-between bg-white/10 p-1 rounded-2xl">
         <TabButton
           icon={<Navigation size={18} />}
@@ -86,21 +87,18 @@ export default function Sidebar({
           active={activeTab === "navigate"}
           onClick={() => setActiveTab("navigate")}
         />
-
         <TabButton
           icon={<DoorOpen size={18} />}
           label="Rooms"
           active={activeTab === "rooms"}
           onClick={() => setActiveTab("rooms")}
         />
-
         <TabButton
           icon={<CalendarDays size={18} />}
           label="Schedule"
           active={activeTab === "schedule"}
           onClick={() => setActiveTab("schedule")}
         />
-
         <TabButton
           icon={<Users size={18} />}
           label="Faculty"
@@ -109,7 +107,7 @@ export default function Sidebar({
         />
       </div>
 
-      {/* Floor Card */}
+      {/* 🔷 Floor Info */}
       {selectedNode && (
         <div className="bg-white/10 p-3 rounded-2xl border border-white/20">
           <FloorCard
@@ -119,9 +117,9 @@ export default function Sidebar({
         </div>
       )}
 
-      {/* Content */}
+      {/* 🔷 Content */}
       <div className="flex-1 overflow-y-auto no-scrollbar space-y-4">
-        {/* Route */}
+        {/* ================= ROUTE ================= */}
         {activeTab === "navigate" && (
           <div className="bg-white/10 p-4 rounded-2xl space-y-4 border border-white/20">
             <SelectBox
@@ -130,13 +128,7 @@ export default function Sidebar({
               onChange={(e: any) => setRouteStart(e.target.value)}
               options={[
                 { value: "myLocation", label: "📍 My Location" },
-                { value: "gate", label: "Gate" },
-                { value: "admin", label: "Admin" },
-                { value: "library", label: "Library" },
-                { value: "blockA", label: "Block A" },
-                { value: "blockC", label: "Block C" },
-                { value: "blockD", label: "Block D" },
-                { value: "boysHostel", label: "Boys Hostel" },
+                ...locationOptions,
               ]}
             />
 
@@ -145,13 +137,8 @@ export default function Sidebar({
               value={routeEnd}
               onChange={(e: any) => setRouteEnd(e.target.value)}
               options={[
-                { value: "", label: "Select" },
-                { value: "admin", label: "Admin" },
-                { value: "library", label: "Library" },
-                { value: "blockA", label: "Block A" },
-                { value: "blockC", label: "Block C" },
-                { value: "blockD", label: "Block D" },
-                { value: "boysHostel", label: "Boys Hostel" },
+                { value: "", label: "Select Destination" },
+                ...locationOptions,
               ]}
             />
 
@@ -166,10 +153,22 @@ export default function Sidebar({
           </div>
         )}
 
-        {/* Rooms */}
-        {activeTab === "rooms" && <RoomsPanel />}
+        {/* ================= ROOMS ================= */}
+        {activeTab === "rooms" && (
+          <>
+            {roomsLoading && (
+              <p className="text-gray-400 text-sm">Loading rooms...</p>
+            )}
 
-        {/* ✅ Schedule (REAL DATA) */}
+            {!roomsLoading && rooms.length === 0 && (
+              <p className="text-gray-400 text-sm">No rooms found.</p>
+            )}
+
+            {!roomsLoading && rooms.length > 0 && <RoomsPanel rooms={rooms} />}
+          </>
+        )}
+
+        {/* ================= SCHEDULE ================= */}
         {activeTab === "schedule" && (
           <>
             {isLoading && (
@@ -186,7 +185,7 @@ export default function Sidebar({
           </>
         )}
 
-        {/* Faculty */}
+        {/* ================= FACULTY ================= */}
         {activeTab === "faculty" &&
           facultyList.map((faculty, i) => (
             <FacultyCard key={i} faculty={faculty} />

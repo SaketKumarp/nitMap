@@ -9,6 +9,8 @@ import {
   BookOpen,
   Bell,
   Layers,
+  ArrowLeft,
+  Loader2,
 } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
@@ -38,7 +40,6 @@ export default function FormPage() {
   const handleSchedule = async (e: any) => {
     e.preventDefault();
 
-    // ✅ Basic validation
     if (
       !schedule.title ||
       !schedule.time ||
@@ -57,21 +58,11 @@ export default function FormPage() {
         time: schedule.time,
         location: schedule.location,
         block: schedule.block,
-        reminder: schedule.reminder || undefined, // ✅ optional
+        reminder: schedule.reminder || undefined,
       });
 
       toast.success("Schedule added 🎉");
 
-      // ✅ Reset form
-      setSchedule({
-        title: "",
-        time: "",
-        location: "",
-        block: "",
-        reminder: "",
-      });
-
-      // ✅ Redirect
       setTimeout(() => {
         router.push("/");
       }, 800);
@@ -97,6 +88,22 @@ export default function FormPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/40 to-black/60" />
         <div className="absolute inset-0 backdrop-blur-[2px]" />
       </div>
+
+      {/* 🔙 Back Button */}
+      <button
+        onClick={() => router.push("/")}
+        className="
+          absolute top-6 left-6 z-10
+          flex items-center gap-2 px-4 py-2
+          bg-white/10 backdrop-blur-xl
+          border border-white/20
+          text-white text-sm rounded-xl
+          hover:bg-white/20 transition
+        "
+      >
+        <ArrowLeft size={16} />
+        Back
+      </button>
 
       {/* 🧊 Form */}
       <div className="w-full max-w-xl">
@@ -147,12 +154,27 @@ export default function FormPage() {
               onChange={(v) => setSchedule({ ...schedule, reminder: v })}
             />
 
+            {/* 💎 PREMIUM BUTTON */}
             <Button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 bg-blue-600 hover:bg-blue-700 rounded-xl"
+              className="
+                relative w-full mt-3 py-3 rounded-xl
+                bg-gradient-to-r from-blue-500 to-indigo-600
+                text-white font-semibold
+                shadow-lg
+                hover:scale-[1.02] hover:shadow-blue-500/30
+                transition-all duration-300
+                disabled:opacity-50 disabled:cursor-not-allowed
+              "
             >
-              {loading ? "Saving..." : "Save Schedule"}
+              {/* Glow effect */}
+              <span className="absolute inset-0 rounded-xl border border-blue-400/30 blur-sm"></span>
+
+              <span className="relative flex items-center justify-center gap-2">
+                {loading && <Loader2 className="animate-spin" size={16} />}
+                {loading ? "Saving..." : "Save Schedule"}
+              </span>
             </Button>
           </form>
         </Card>
