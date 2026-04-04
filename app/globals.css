@@ -141,6 +141,24 @@ body {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
   border-radius: 16px;
 }
+:root {
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-poppins);
+  --font-mono: var(--font-mono);
+}
+
+body {
+  font-family: var(--font-sans);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+}
 
 /* Map marker */
 .marker {

@@ -1,48 +1,59 @@
 "use client";
 
-import MapView from "@/components/frontend/MapView";
 import Sidebar from "@/components/frontend/SideBar";
-import TopBar from "@/components/frontend/TopBar";
+import DirectionsCard from "@/components/frontend/DirectionCard";
+import Navbar from "@/components/frontend/Navbar";
 
 import { useState } from "react";
 import { dijkstra } from "@/lib/dijkistra";
-import { edges } from "@/data/edges";
+import { edges, wheelchairEdges } from "@/data/edges";
 import { getDirections } from "@/lib/getdirection";
-import DirectionsCard from "@/components/frontend/DirectionCard";
+import MapView from "@/components/frontend/MapView";
 
 export default function Page() {
   const [activeTab, setActiveTab] = useState("navigate");
   const [routeStart, setRouteStart] = useState("gate");
   const [routeEnd, setRouteEnd] = useState("");
+  const [wheelchair, setWheelchair] = useState(false);
 
-  // 🔥 THIS IS WHERE PATH IS CALCULATED
-  const path = routeEnd ? dijkstra(edges, routeStart, routeEnd) : [];
+  const graph = wheelchair ? wheelchairEdges : edges;
 
-  // 🔥 THIS IS WHERE DIRECTIONS ARE GENERATED
+  const path = routeEnd ? dijkstra(graph, routeStart, routeEnd) : [];
   const steps = getDirections(path);
 
   return (
-    <div className="flex h-screen text-white">
-      {/* Sidebar */}
-      <div className="glass-dark m-3 rounded-2xl">
-        <Sidebar
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          routeStart={routeStart}
-          setRouteStart={setRouteStart}
-          routeEnd={routeEnd}
-          setRouteEnd={setRouteEnd}
-        />
-      </div>
+    <div className="min-h-screen bg-[#0b1220] text-white p-6 space-y-6">
+      {/* ✅ Navbar */}
+      <Navbar />
 
-      {/* Map Area */}
-      <div className="flex-1 p-3">
-        <div className="w-full h-full rounded-2xl overflow-hidden relative glass">
-          <TopBar />
-          <MapView routeStart={routeStart} routeEnd={routeEnd} />
+      {/* 🔷 Main Layout */}
+      <div className="flex gap-6 h-[calc(100vh-110px)]">
+        {/* Sidebar */}
+        <div className="w-80 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-lg">
+          <Sidebar
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            routeStart={routeStart}
+            setRouteStart={setRouteStart}
+            routeEnd={routeEnd}
+            setRouteEnd={setRouteEnd}
+            wheelchair={wheelchair}
+            setWheelchair={setWheelchair}
+          />
+        </div>
 
-          {/* 🔥 DIRECTIONS CARD HERE */}
-          <DirectionsCard steps={steps} />
+        {/* Map */}
+        <div className="flex-1 relative rounded-2xl overflow-hidden border border-white/10 shadow-xl">
+          <MapView
+            routeStart={routeStart}
+            routeEnd={routeEnd}
+            wheelchair={wheelchair}
+          />
+
+          {/* Directions overlay */}
+          <div className="absolute right-4 top-24 z-10">
+            <DirectionsCard steps={steps} />
+          </div>
         </div>
       </div>
     </div>

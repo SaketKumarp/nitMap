@@ -7,6 +7,7 @@ export const nodes: Record<string, NodeType> = {
     lat: 25.25694430630656,
     lng: 91.74122008748355,
     type: "gate",
+     
   },
   admin: {
     id: "admin",

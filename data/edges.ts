@@ -1,53 +1,51 @@
 export const edges = {
-  // ENTRY
-  gate: [{ node: "j5", distance: 40 }],
+  gate: [{ node: "j5", distance: 40, accessible: true }],
 
-  // LOWER AREA
-  blockA: [{ node: "j5", distance: 50 }],
+  blockA: [{ node: "j5", distance: 50, accessible: true }],
+
   j5: [
-    { node: "gate", distance: 40 },
-    { node: "blockA", distance: 50 },
-    { node: "j4", distance: 30 },
+    { node: "gate", distance: 40, accessible: true },
+    { node: "blockA", distance: 50, accessible: true },
+    { node: "j4", distance: 30, accessible: false }, // stairs
   ],
 
-  // CENTER
-  admin: [{ node: "j4", distance: 20 }],
-  library: [{ node: "j4", distance: 25 }],
+  admin: [{ node: "j4", distance: 20, accessible: true }],
+  library: [{ node: "j4", distance: 25, accessible: true }],
 
   j4: [
-    { node: "j5", distance: 30 },
-    { node: "admin", distance: 20 },
-    { node: "library", distance: 25 },
-    { node: "j3", distance: 35 },
+    { node: "j5", distance: 30, accessible: false },
+    { node: "admin", distance: 20, accessible: true },
+    { node: "library", distance: 25, accessible: true },
+    { node: "j3", distance: 35, accessible: true },
   ],
 
-  // UPPER MID
-  blockC: [{ node: "j3", distance: 30 }],
+  blockC: [{ node: "j3", distance: 30, accessible: true }],
 
   j3: [
-    { node: "j4", distance: 35 },
-    { node: "blockC", distance: 30 },
-    { node: "j2", distance: 30 },
+    { node: "j4", distance: 35, accessible: true },
+    { node: "blockC", distance: 30, accessible: true },
+    { node: "j2", distance: 30, accessible: false }, // slope
   ],
 
-  // TOP AREA
-  blockD: [{ node: "j2", distance: 25 }],
+  blockD: [{ node: "j2", distance: 25, accessible: true }],
 
   j2: [
-    { node: "j3", distance: 30 },
-    { node: "blockD", distance: 25 },
-    { node: "j1", distance: 25 },
+    { node: "j3", distance: 30, accessible: false },
+    { node: "blockD", distance: 25, accessible: true },
+    { node: "j1", distance: 25, accessible: true },
   ],
 
-  // EXTRA CONNECTIVITY
-  j1: [{ node: "j2", distance: 25 }],
+  j1: [{ node: "j2", distance: 25, accessible: true }],
 
-  // HOSTELS SIDE
-  girlsHostel: [{ node: "j6", distance: 60 }],
-  boysHostel: [{ node: "j6", distance: 40 }],
-
-  j6: [
-    { node: "girlsHostel", distance: 60 },
-    { node: "boysHostel", distance: 40 },
-  ],
+  boysHostel: [{ node: "j6", distance: 40, accessible: true }],
+  j6: [{ node: "boysHostel", distance: 40, accessible: true }],
 };
+
+// 🔥 AUTO-GENERATE WHEELCHAIR GRAPH
+export const wheelchairEdges: any = {};
+
+Object.keys(edges).forEach((node) => {
+  wheelchairEdges[node] = edges[node].filter(
+    (edge: any) => edge.accessible === true,
+  );
+});
