@@ -4,7 +4,7 @@ import { Navigation, DoorOpen, CalendarDays, Users } from "lucide-react";
 
 import RoomsPanel from "./Room";
 import ScheduleCard from "./ScheduleCard";
-import FacultyCard from "./FacultyCard";
+import { FacultyCard } from "./FacultyCard";
 import Image from "next/image";
 
 export default function Sidebar({
@@ -17,7 +17,7 @@ export default function Sidebar({
   wheelchair,
   setWheelchair,
 }: any) {
-  // 🔥 Dummy Data (replace with API later)
+  // 🔥 Dummy Data (unchanged)
   const schedule = [
     {
       time: "09:00 AM",
@@ -116,11 +116,13 @@ export default function Sidebar({
         {/* Route */}
         {activeTab === "navigate" && (
           <div className="bg-white/10 p-4 rounded-2xl space-y-4 border border-white/20">
+            {/* ✅ UPDATED START */}
             <SelectBox
               label="Start"
               value={routeStart}
               onChange={(e: any) => setRouteStart(e.target.value)}
               options={[
+                { value: "myLocation", label: "📍 My Location" }, // 🔥 ADDED
                 { value: "gate", label: "Gate" },
                 { value: "admin", label: "Admin" },
                 { value: "library", label: "Library" },
@@ -131,6 +133,7 @@ export default function Sidebar({
               ]}
             />
 
+            {/* Destination */}
             <SelectBox
               label="Destination"
               value={routeEnd}
@@ -146,6 +149,7 @@ export default function Sidebar({
               ]}
             />
 
+            {/* Checkbox */}
             <label className="flex items-center gap-2 text-sm text-gray-300">
               <input
                 type="checkbox"

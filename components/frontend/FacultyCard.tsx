@@ -4,15 +4,15 @@ import { MapPin, User } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-type Faculty = {
+interface Faculty {
   name: string;
   department: string;
   location: string;
   room?: string;
-  status?: "AVAILABLE" | "BUSY" | "ON_LEAVE";
-};
+  status?: string;
+}
 
-export default function FacultyCard({ faculty }: { faculty: Faculty }) {
+export const FacultyCard = ({ faculty }: { faculty: Faculty }) => {
   return (
     <Card
       className="
@@ -24,14 +24,12 @@ export default function FacultyCard({ faculty }: { faculty: Faculty }) {
       "
     >
       <CardContent className="p-4 flex items-center justify-between">
-        {/* Left Section */}
+        {/* Left */}
         <div className="flex items-center gap-4">
-          {/* Avatar */}
           <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
             <User className="text-white" size={20} />
           </div>
 
-          {/* Info */}
           <div>
             <h2 className="text-white font-semibold text-base">
               {faculty.name}
@@ -47,9 +45,8 @@ export default function FacultyCard({ faculty }: { faculty: Faculty }) {
           </div>
         </div>
 
-        {/* Right Section */}
+        {/* Right */}
         <div className="flex flex-col items-end gap-2">
-          {/* Status */}
           {faculty.status && (
             <span
               className={`text-xs px-2 py-1 rounded-full ${
@@ -64,7 +61,6 @@ export default function FacultyCard({ faculty }: { faculty: Faculty }) {
             </span>
           )}
 
-          {/* Action */}
           <Button
             size="sm"
             variant="outline"
@@ -76,4 +72,4 @@ export default function FacultyCard({ faculty }: { faculty: Faculty }) {
       </CardContent>
     </Card>
   );
-}
+};

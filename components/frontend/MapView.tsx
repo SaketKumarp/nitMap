@@ -3,13 +3,18 @@
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import { createRoot } from "react-dom/client";
+import { useUser } from "@clerk/nextjs";
+
 import { nodes } from "@/data/nodes";
 import { edges } from "@/data/edges";
 import { dijkstra } from "@/lib/dijkistra";
 import { drawRoute } from "@/lib/drawRoutes";
+import { findNearestNode } from "@/lib/nearestNodes";
+
 import MapMarker from "./Mapmarker";
 import { heatmapData } from "@/data/heatmap";
 import TopBar from "./TopBar";
+import { createUserMarker } from "../user/UserMarker";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 
@@ -17,8 +22,14 @@ export default function MapView({ routeStart, routeEnd }: any) {
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const markersRef = useRef<any[]>([]);
-  const [showHeatmap, setShowHeatmap] = useState(true);
+  const userMarkerRef = useRef<mapboxgl.Marker | null>(null);
 
+  const [showHeatmap, setShowHeatmap] = useState(true);
+  const [userLocation, setUserLocation] = useState<any>(null);
+
+  const { user } = useUser();
+
+  /* 🗺️ INIT MAP */
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
 
@@ -35,14 +46,17 @@ export default function MapView({ routeStart, routeEnd }: any) {
     map.on("load", () => {
       map.resize();
 
+      /* 📍 STATIC MARKERS (unchanged) */
       Object.values(nodes).forEach((node) => {
         const el = document.createElement("div");
-        el.id = `marker-${node.id}`;
 
         const root = createRoot(el);
         root.render(<MapMarker active={false} type={node.type} />);
 
-        const marker = new mapboxgl.Marker({ element: el, anchor: "bottom" })
+        const marker = new mapboxgl.Marker({
+          element: el,
+          anchor: "bottom",
+        })
           .setLngLat([node.lng, node.lat])
           .setPopup(new mapboxgl.Popup().setText(node.name))
           .addTo(map);
@@ -50,6 +64,7 @@ export default function MapView({ routeStart, routeEnd }: any) {
         markersRef.current.push(marker);
       });
 
+      /* 🔥 HEATMAP */
       map.addSource("crowd-heat", {
         type: "geojson",
         data: heatmapData,
@@ -67,6 +82,7 @@ export default function MapView({ routeStart, routeEnd }: any) {
     });
   }, []);
 
+  /* 🔥 HEATMAP TOGGLE */
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -78,38 +94,91 @@ export default function MapView({ routeStart, routeEnd }: any) {
     }
   }, [showHeatmap]);
 
+  /* 📍 REAL-TIME LOCATION */
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !routeStart || !routeEnd) return;
+    if (!map || !user) return;
 
-    const path = dijkstra(edges, routeStart, routeEnd);
+    if (!navigator.geolocation) return;
+
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+
+        setUserLocation({ lat: latitude, lng: longitude });
+
+        if (userMarkerRef.current) {
+          userMarkerRef.current.setLngLat([longitude, latitude]);
+        } else {
+          const el = createUserMarker(user.imageUrl || "/default-avatar.png");
+
+          const marker = new mapboxgl.Marker({
+            element: el,
+            anchor: "center",
+          })
+            .setLngLat([longitude, latitude])
+            .addTo(map);
+
+          userMarkerRef.current = marker;
+        }
+
+        map.easeTo({
+          center: [longitude, latitude],
+          duration: 800,
+        });
+      },
+      console.error,
+      { enableHighAccuracy: true },
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [user]);
+
+  /* 🧭 ROUTING LOGIC (DUAL MODE) */
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !routeEnd) return;
+
+    let startNode = routeStart;
+
+    // 🔥 If no manual start → use user location
+    if (!routeStart && userLocation) {
+      startNode = findNearestNode(userLocation.lat, userLocation.lng, nodes);
+    }
+
+    if (!startNode) return;
+
+    const path = dijkstra(edges, startNode, routeEnd);
     drawRoute(map, path, nodes);
 
     const bounds = new mapboxgl.LngLatBounds();
+
+    // include user position if exists
+    if (userLocation) {
+      bounds.extend([userLocation.lng, userLocation.lat]);
+    }
+
     path.forEach((id) => {
       bounds.extend([nodes[id].lng, nodes[id].lat]);
     });
 
     map.fitBounds(bounds, { padding: 120, duration: 1500 });
-  }, [routeStart, routeEnd]);
+  }, [routeStart, routeEnd, userLocation]);
 
   return (
     <div className="w-full h-full relative">
       <div ref={mapContainerRef} className="w-full h-full" />
 
-      {/* 🔷 TopBar inside map */}
       <div className="absolute top-4 left-4 right-4 z-10">
         <TopBar />
       </div>
 
-      {/* 🔥 Heatmap Button */}
       <button
         onClick={() => setShowHeatmap((prev) => !prev)}
-        className="absolute top-20 right-4 z-10 bg-black/70 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10"
+        className="absolute top-20 right-4 z-10 bg-black/70 px-4 py-2 rounded-xl text-white"
       >
         {showHeatmap ? "Hide Crowd" : "Show Crowd"}
       </button>
     </div>
   );
 }
- 
