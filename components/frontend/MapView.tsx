@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import { useUser } from "@clerk/nextjs";
+import type { FeatureCollection, Point } from "geojson"; // ✅ FIX
 
 import { nodes } from "@/data/nodes";
 import { edges } from "@/data/edges";
@@ -27,6 +28,11 @@ type NodeType = {
   floors?: { label: string; value: string }[];
 };
 
+type UserLocation = {
+  lat: number;
+  lng: number;
+};
+
 type Props = {
   routeStart: string;
   routeEnd: string;
@@ -44,7 +50,7 @@ export default function MapView({
   const userMarkerRef = useRef<mapboxgl.Marker | null>(null);
 
   const [showHeatmap, setShowHeatmap] = useState(true);
-  const [userLocation, setUserLocation] = useState<any>(null);
+  const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
 
   const { user } = useUser();
 
@@ -67,7 +73,7 @@ export default function MapView({
       map.resize();
 
       /* 📍 MARKERS */
-      Object.values(nodes).forEach((node: any) => {
+      Object.values(nodes).forEach((node: NodeType) => {
         if (node.type === "junction") return;
 
         const el = document.createElement("div");
@@ -83,23 +89,22 @@ export default function MapView({
           </div>
         `;
 
-        const marker = new mapboxgl.Marker({
+        new mapboxgl.Marker({
           element: el,
           anchor: "bottom",
         })
           .setLngLat([node.lng, node.lat])
           .addTo(map);
 
-        /* ✅ CLICK → SEND TO SIDEBAR */
         el.addEventListener("click", () => {
           setSelectedNode(node);
         });
       });
 
-      /* 🔥 HEATMAP */
+      /* 🔥 HEATMAP (FIXED TYPE) */
       map.addSource("crowd-heat", {
         type: "geojson",
-        data: heatmapData,
+        data: heatmapData as FeatureCollection<Point>, // ✅ FIX
       });
 
       map.addLayer({
@@ -114,7 +119,7 @@ export default function MapView({
     });
   }, [setSelectedNode]);
 
-  /* 🔥 HEATMAP TOGGLE */
+  /* 🔥 TOGGLE */
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -134,10 +139,15 @@ export default function MapView({
     if (!navigator.geolocation) return;
 
     const watchId = navigator.geolocation.watchPosition(
-      (pos) => {
+      (pos: GeolocationPosition) => {
         const { latitude, longitude } = pos.coords;
 
-        setUserLocation({ lat: latitude, lng: longitude });
+        const location: UserLocation = {
+          lat: latitude,
+          lng: longitude,
+        };
+
+        setUserLocation(location);
 
         if (userMarkerRef.current) {
           userMarkerRef.current.setLngLat([longitude, latitude]);
@@ -171,7 +181,7 @@ export default function MapView({
     const map = mapRef.current;
     if (!map || !routeEnd) return;
 
-    let startNode = routeStart;
+    let startNode: string | null = routeStart || null;
 
     if (routeStart === "myLocation" && userLocation) {
       startNode = findNearestNode(userLocation.lat, userLocation.lng, nodes);
@@ -181,6 +191,7 @@ export default function MapView({
       startNode = findNearestNode(userLocation.lat, userLocation.lng, nodes);
     }
 
+    // ✅ SAFE CHECK
     if (!startNode) return;
 
     const path = dijkstra(edges, startNode, routeEnd);
@@ -193,7 +204,10 @@ export default function MapView({
     }
 
     path.forEach((id) => {
-      bounds.extend([nodes[id].lng, nodes[id].lat]);
+      const node = nodes[id];
+      if (node) {
+        bounds.extend([node.lng, node.lat]);
+      }
     });
 
     map.fitBounds(bounds, { padding: 120, duration: 1500 });
@@ -208,7 +222,7 @@ export default function MapView({
         <TopBar />
       </div>
 
-      {/* Heatmap Toggle */}
+      {/* Toggle */}
       <button
         onClick={() => setShowHeatmap((prev) => !prev)}
         className="absolute top-20 right-4 z-10 bg-black/70 px-4 py-2 rounded-xl text-white backdrop-blur-md"

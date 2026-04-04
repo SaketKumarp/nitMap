@@ -1,18 +1,29 @@
-export function dijkstra(graph: any, start: string, end: string) {
-  const distances: any = {};
-  const prev: any = {};
-  const visited = new Set();
+type Edge = {
+  node: string;
+  distance: number;
+  accessible: boolean;
+};
 
+type Graph = Record<string, Edge[]>;
+
+export function dijkstra(graph: Graph, start: string, end: string): string[] {
+  const distances: Record<string, number> = {};
+  const prev: Record<string, string | null> = {};
+  const visited = new Set<string>();
+
+  /* INIT */
   Object.keys(graph).forEach((node) => {
     distances[node] = Infinity;
+    prev[node] = null;
   });
 
   distances[start] = 0;
 
   while (true) {
-    let closestNode = null;
+    let closestNode: string | null = null;
     let shortestDistance = Infinity;
 
+    /* FIND CLOSEST */
     for (const node in distances) {
       if (!visited.has(node) && distances[node] < shortestDistance) {
         shortestDistance = distances[node];
@@ -25,7 +36,10 @@ export function dijkstra(graph: any, start: string, end: string) {
 
     visited.add(closestNode);
 
-    for (let neighbor of graph[closestNode] || []) {
+    /* RELAX EDGES */
+    const neighbors = graph[closestNode] || [];
+
+    for (const neighbor of neighbors) {
       const newDist = distances[closestNode] + neighbor.distance;
 
       if (newDist < distances[neighbor.node]) {
@@ -35,8 +49,9 @@ export function dijkstra(graph: any, start: string, end: string) {
     }
   }
 
-  const path = [];
-  let curr = end;
+  /* BUILD PATH */
+  const path: string[] = [];
+  let curr: string | null = end;
 
   while (curr) {
     path.unshift(curr);

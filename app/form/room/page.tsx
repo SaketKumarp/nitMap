@@ -14,6 +14,15 @@ import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import Image from "next/image";
 
+/* ✅ TYPE FOR FORM FIELD */
+type FormFieldProps = {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  icon?: React.ReactNode;
+  placeholder?: string;
+};
+
 export default function RoomFormPage() {
   const router = useRouter();
   const createRoom = useMutation(api.room.createRoom);
@@ -27,7 +36,8 @@ export default function RoomFormPage() {
     note: "",
   });
 
-  const handleSubmit = async (e: any) => {
+  /* ✅ FIXED TYPE */
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!room.name || !room.block) {
@@ -72,7 +82,7 @@ export default function RoomFormPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/40 to-black/60" />
         <div className="absolute inset-0 backdrop-blur-[2px]" />
       </div>
- 
+
       <button
         onClick={() => router.push("/")}
         className="
@@ -87,7 +97,7 @@ export default function RoomFormPage() {
         <ArrowLeft size={16} />
         Back
       </button>
- 
+
       <div className="w-full max-w-xl">
         <Card className="p-6 rounded-3xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl">
           <h2 className="text-white text-lg font-semibold flex items-center gap-2 mb-4">
@@ -117,7 +127,12 @@ export default function RoomFormPage() {
               <Label className="text-gray-300 text-sm">Status</Label>
               <select
                 value={room.status}
-                onChange={(e) => setRoom({ ...room, status: e.target.value })}
+                onChange={(e) =>
+                  setRoom({
+                    ...room,
+                    status: e.target.value as "FREE" | "OCCUPIED",
+                  })
+                }
                 className="w-full mt-1 p-2 rounded-lg bg-black/30 text-white border border-white/10"
               >
                 <option value="FREE">FREE</option>
@@ -133,7 +148,7 @@ export default function RoomFormPage() {
               onChange={(v) => setRoom({ ...room, note: v })}
             />
 
-            {/* 🚀 Premium Button */}
+            {/* 🚀 Button */}
             <Button
               type="submit"
               disabled={loading}
@@ -148,7 +163,6 @@ export default function RoomFormPage() {
                 disabled:opacity-60
               "
             >
-              {/* Glow */}
               <span className="absolute inset-0 rounded-xl border border-green-400/30 blur-sm"></span>
 
               {loading ? (
@@ -167,8 +181,14 @@ export default function RoomFormPage() {
   );
 }
 
- 
-function FormField({ label, value, onChange, icon, placeholder }: any) {
+/* ✅ FIXED COMPONENT */
+function FormField({
+  label,
+  value,
+  onChange,
+  icon,
+  placeholder,
+}: FormFieldProps) {
   return (
     <div>
       <Label className="text-gray-300 text-sm flex items-center gap-2">

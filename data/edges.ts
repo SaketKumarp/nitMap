@@ -1,5 +1,10 @@
-export const edges: Record<string, any[]> = {
-  /* 🔹 MAIN GRAPH */
+type Edge = {
+  node: string;
+  distance: number;
+  accessible: boolean;
+};
+
+export const edges: Record<string, Edge[]> = {
   gate: [{ node: "j5", distance: 40, accessible: true }],
 
   blockA: [{ node: "j5", distance: 50, accessible: true }],
@@ -8,7 +13,7 @@ export const edges: Record<string, any[]> = {
     { node: "gate", distance: 40, accessible: true },
     { node: "blockA", distance: 50, accessible: true },
     { node: "j4", distance: 30, accessible: false },
-    { node: "g5", distance: 25, accessible: true }, // 🔥 CONNECT HOSTEL
+    { node: "g5", distance: 25, accessible: true },
   ],
 
   admin: [{ node: "j4", distance: 20, accessible: true }],
@@ -39,7 +44,7 @@ export const edges: Record<string, any[]> = {
 
   j1: [{ node: "j2", distance: 25, accessible: true }],
 
-  /* 🔥 HOSTEL CONNECTION (FULLY CONNECTED PATH) */
+  /* 🔥 HOSTEL CONNECTION */
 
   boysHostel: [{ node: "j6", distance: 40, accessible: true }],
 
@@ -65,7 +70,7 @@ export const edges: Record<string, any[]> = {
 
   g5: [
     { node: "g4", distance: 20, accessible: true },
-    { node: "j5", distance: 25, accessible: true }, // 🔥 KEY LINK
+    { node: "j5", distance: 25, accessible: true },
   ],
 };
 
@@ -73,10 +78,10 @@ export const edges: Record<string, any[]> = {
    ♿ WHEELCHAIR GRAPH
 ======================= */
 
-export const wheelchairEdges: any = {};
+export const wheelchairEdges: Record<string, Edge[]> = {};
 
 Object.keys(edges).forEach((node) => {
   wheelchairEdges[node] = edges[node].filter(
-    (edge: any) => edge.accessible === true,
+    (edge) => edge.accessible === true,
   );
 });

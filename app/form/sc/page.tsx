@@ -23,6 +23,16 @@ import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
 import Image from "next/image";
 
+/* ✅ TYPES */
+type FormFieldProps = {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  icon?: React.ReactNode;
+  type?: string;
+  placeholder?: string;
+};
+
 export default function FormPage() {
   const router = useRouter();
   const addSchedule = useMutation(api.schedules.createSchedule);
@@ -37,7 +47,8 @@ export default function FormPage() {
     reminder: "",
   });
 
-  const handleSchedule = async (e: any) => {
+  /* ✅ FIXED TYPE */
+  const handleSchedule = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (
@@ -154,7 +165,7 @@ export default function FormPage() {
               onChange={(v) => setSchedule({ ...schedule, reminder: v })}
             />
 
-            {/* 💎 PREMIUM BUTTON */}
+            {/* 💎 BUTTON */}
             <Button
               type="submit"
               disabled={loading}
@@ -168,7 +179,6 @@ export default function FormPage() {
                 disabled:opacity-50 disabled:cursor-not-allowed
               "
             >
-              {/* Glow effect */}
               <span className="absolute inset-0 rounded-xl border border-blue-400/30 blur-sm"></span>
 
               <span className="relative flex items-center justify-center gap-2">
@@ -183,7 +193,7 @@ export default function FormPage() {
   );
 }
 
-/* 🔹 Reusable Field */
+/* ✅ FIXED FORM FIELD */
 function FormField({
   label,
   value,
@@ -191,7 +201,7 @@ function FormField({
   icon,
   type = "text",
   placeholder,
-}: any) {
+}: FormFieldProps) {
   return (
     <div>
       <Label className="text-gray-300 text-sm flex items-center gap-2">

@@ -8,12 +8,65 @@ import { FacultyCard } from "./FacultyCard";
 import Image from "next/image";
 import FloorCard from "./FloorCard";
 
-// ✅ HOOKS
 import { useSchedules } from "@/hooks/fetchSchedule";
 import { useRooms } from "@/hooks/useRoom";
 
-// ✅ NODES IMPORT
 import { nodes } from "@/data/nodes";
+
+/* ✅ TYPES */
+
+type NodeType = {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  type?: string;
+  image?: string;
+  floors?: { label: string; value: string }[];
+};
+
+type SidebarProps = {
+  activeTab: "navigate" | "rooms" | "schedule" | "faculty";
+  setActiveTab: (tab: SidebarProps["activeTab"]) => void;
+  routeStart: string;
+  setRouteStart: (value: string) => void;
+  routeEnd: string;
+  setRouteEnd: (value: string) => void;
+  wheelchair: boolean;
+  setWheelchair: (value: boolean) => void;
+  selectedNode: NodeType | null;
+  setSelectedNode: (node: NodeType | null) => void;
+};
+
+type SelectOption = {
+  value: string;
+  label: string;
+};
+
+type TabButtonProps = {
+  icon: React.ReactNode;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+};
+
+type SelectBoxProps = {
+  label: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  options: SelectOption[];
+};
+
+type ScheduleType = {
+  _id: string;
+  title: string;
+  time: string;
+  location: string;
+  block: string;
+  reminder?: string;
+};
+
+/* ================= COMPONENT ================= */
 
 export default function Sidebar({
   activeTab,
@@ -26,20 +79,19 @@ export default function Sidebar({
   setWheelchair,
   selectedNode,
   setSelectedNode,
-}: any) {
-  // ✅ FETCH DATA
+}: SidebarProps) {
   const { schedules, isLoading } = useSchedules();
   const { rooms, isLoading: roomsLoading } = useRooms();
 
-  // ✅ DYNAMIC LOCATIONS (NO JUNCTIONS)
-  const locationOptions = Object.values(nodes)
+  /* ✅ LOCATION OPTIONS */
+  const locationOptions: SelectOption[] = Object.values(nodes)
     .filter((node) => node.type !== "junction")
     .map((node) => ({
       value: node.id,
       label: node.name,
     }));
 
-  // 🔥 Faculty (unchanged)
+  /* 🔥 Faculty */
   const facultyList = [
     {
       name: "Dr DB Tariang",
@@ -54,7 +106,7 @@ export default function Sidebar({
       status: "BUSY",
     },
     {
-      name: "N. Herojit singh",
+      name: "N. Herojit Singh",
       department: "Mathematics",
       location: "On Leave",
       status: "ON_LEAVE",
@@ -119,13 +171,13 @@ export default function Sidebar({
 
       {/* 🔷 Content */}
       <div className="flex-1 overflow-y-auto no-scrollbar space-y-4">
-        {/* ================= ROUTE ================= */}
+        {/* ROUTE */}
         {activeTab === "navigate" && (
           <div className="bg-white/10 p-4 rounded-2xl space-y-4 border border-white/20">
             <SelectBox
               label="Start"
               value={routeStart}
-              onChange={(e: any) => setRouteStart(e.target.value)}
+              onChange={(e) => setRouteStart(e.target.value)}
               options={[
                 { value: "myLocation", label: "📍 My Location" },
                 ...locationOptions,
@@ -135,7 +187,7 @@ export default function Sidebar({
             <SelectBox
               label="Destination"
               value={routeEnd}
-              onChange={(e: any) => setRouteEnd(e.target.value)}
+              onChange={(e) => setRouteEnd(e.target.value)}
               options={[
                 { value: "", label: "Select Destination" },
                 ...locationOptions,
@@ -153,22 +205,20 @@ export default function Sidebar({
           </div>
         )}
 
-        {/* ================= ROOMS ================= */}
+        {/* ROOMS */}
         {activeTab === "rooms" && (
           <>
             {roomsLoading && (
               <p className="text-gray-400 text-sm">Loading rooms...</p>
             )}
-
             {!roomsLoading && rooms.length === 0 && (
               <p className="text-gray-400 text-sm">No rooms found.</p>
             )}
-
             {!roomsLoading && rooms.length > 0 && <RoomsPanel rooms={rooms} />}
           </>
         )}
 
-        {/* ================= SCHEDULE ================= */}
+        {/* SCHEDULE */}
         {activeTab === "schedule" && (
           <>
             {isLoading && (
@@ -179,13 +229,13 @@ export default function Sidebar({
               <p className="text-gray-400 text-sm">No schedules found.</p>
             )}
 
-            {schedules?.map((item: any) => (
+            {schedules?.map((item: ScheduleType) => (
               <ScheduleCard key={item._id} item={item} />
             ))}
           </>
         )}
 
-        {/* ================= FACULTY ================= */}
+        {/* FACULTY */}
         {activeTab === "faculty" &&
           facultyList.map((faculty, i) => (
             <FacultyCard key={i} faculty={faculty} />
@@ -196,7 +246,7 @@ export default function Sidebar({
 }
 
 /* 🔘 Tab Button */
-function TabButton({ icon, label, active, onClick }: any) {
+function TabButton({ icon, label, active, onClick }: TabButtonProps) {
   return (
     <button
       onClick={onClick}
@@ -214,7 +264,7 @@ function TabButton({ icon, label, active, onClick }: any) {
 }
 
 /* 🔽 Select Box */
-function SelectBox({ label, value, onChange, options }: any) {
+function SelectBox({ label, value, onChange, options }: SelectBoxProps) {
   return (
     <div>
       <label className="text-xs text-gray-400">{label}</label>
@@ -223,7 +273,7 @@ function SelectBox({ label, value, onChange, options }: any) {
         onChange={onChange}
         className="w-full mt-1 p-2 rounded-lg bg-black/30 border border-white/10 text-white focus:outline-none"
       >
-        {options.map((opt: any) => (
+        {options.map((opt) => (
           <option key={opt.value} value={opt.value}>
             {opt.label}
           </option>
