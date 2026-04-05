@@ -6,9 +6,8 @@
 ---
 
 ## 🌐 Live Demo
-🔗nit-map-9di8.vercel.app
-or try this
-https://nit-map-9di8.vercel.app/
+🔗https://nit-map-z1gd.vercel.app
+ 
 
 ---
 
