@@ -120,7 +120,7 @@ Secure Auth
 #secure database fetching
 <img width="1470" height="956" alt="Screenshot 2026-04-05 at 14 08 09" src="https://github.com/user-attachments/assets/d90ea6ea-00d5-48f7-b5e4-685d91b5610c" />
 
-
+this is vibe coded i have to fix this as well
 ## ⚙️ Installation
 
 ```bash
