@@ -122,6 +122,7 @@ Secure Auth
 
 this is vibe coded i have to fix this as well
 ## ⚙️ Installation
+i will imporove this
 
 ```bash
 git clone https://github.com/your-username/nit-flow.git
